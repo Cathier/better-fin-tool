@@ -34,6 +34,15 @@ By : ravo Norway
 
 Changes :
         Updated the VGUI. Fixed the "ULib-bug". Fixed pos. and angle, and added another option to that to activate or not in the VGUI.
+---
+#4
+---
+Edited : 07.09.2019
+File: fin2.lua
+By : Phatso
+
+Changes :
+        Fixed a small bug where minwind / maxwind were inappropriately nil
 ]]
 
 fintool = {}
@@ -49,10 +58,13 @@ hook.Add("Initialize", "finitialize_", fintool.initialize_ )
 function fintool.think_()
 	fintool.nextthink = fintool.nextthink or CurTime()
 	if CurTime() > fintool.nextthink then
+		local minwind = fintool.minwind or 0
+		local maxwind = fintool.maxwind or 360
+
 		fintool.maxdelay = fintool.maxdelay or 120
-		fintool.wind = Vector(math.Rand(fintool.minwind, fintool.maxwind), math.Rand(fintool.minwind, fintool.maxwind), 0)
+		fintool.wind = Vector(math.Rand(minwind, maxwind), math.Rand(minwind, maxwind), 0)
 		fintool.nextthink = fintool.nextthink + math.Rand(0, fintool.maxdelay)
-        --
+
         fintool.maxeff = fintool.maxeff or 250
 	end
 end
@@ -66,13 +78,13 @@ concommand.Add("fintool_setmaxwinddelay",fintool.setmaxdelay)
 
 -- Min/Max wind
 function fintool.setmaxwind(player, command, arg)
-	if player:IsAdmin() or player:IsSuperAdmin() then fintool.maxwind = arg[1] end
+	if player:IsAdmin() or player:IsSuperAdmin() then fintool.maxwind = arg[1] or 360 end
 end 
 
 concommand.Add("fintool_setmaxwind",fintool.setmaxwind)
 
 function fintool.setminwind(player, command, arg)
-	if player:IsAdmin() or player:IsSuperAdmin() then fintool.minwind = arg[1] end
+	if player:IsAdmin() or player:IsSuperAdmin() then fintool.minwind = arg[1] or 0 end
 end 
 
 concommand.Add("fintool_setminwind",fintool.setminwind)
