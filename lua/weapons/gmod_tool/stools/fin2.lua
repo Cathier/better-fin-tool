@@ -1,5 +1,5 @@
 TOOL.Category		= "Construction"
-TOOL.Name			= "#Tool.fin2.name"
+TOOL.Name			= "#Tool.better_fin.name"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
 
@@ -16,7 +16,7 @@ cleanup.Register( "fin_2" )
 
 -- // Add Default Language translation (saves adding it to the txt files)
 if CLIENT then
-	language.Add( "Tool.fin2.name", "Fin-tool II" )
+	language.Add( "Tool.fin2.name", "Better Fin Tool" )
 	language.Add( "Tool.fin2.desc", "Make a Fin out of a physics-prop." )
 	language.Add( "Tool.fin2.0", "Left-Click to apply settings; Right-Click to copy" )
 	language.Add( "Tool.fin2.eff", "Efficency of Fin:" )
@@ -27,7 +27,7 @@ if CLIENT then
 end
 
 if SERVER then
-    CreateConVar('sbox_maxfin_2', 20)
+    CreateConVar("sbox_maxfin_2", 20)
 end
 
 -- Console Varibles
