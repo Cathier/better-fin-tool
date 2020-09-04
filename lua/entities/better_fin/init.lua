@@ -22,10 +22,10 @@ end
 	if !physobj:IsValid() then return end
 	
 	local velocity = physobj:GetVelocity()
-	local wingNormal = self:GetForward()
+	local wingNormal = physobj:WorldToLocalVector(self.normal)
 	
 	local liftMagnitude = -wingNormal:Dot(velocity) * velocity:Length()
-	local lift = wingNormal * liftMagnitude * self.coefficient / 100.0
+	local lift = wingNormal * liftMagnitude * self.coefficient * self.surface_area / 1000.0
 	
 	physobj:ApplyForceCenter(lift)
 	

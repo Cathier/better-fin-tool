@@ -6,9 +6,9 @@ TOOL.ConfigName		= ""
 TOOL.ClientConVar = {
     coef		        = 0.5,
     surf_area           = 1.0,
-    norm_x              = 0.0,
+    norm_x              = 1.0,
     norm_y              = 0.0,
-    norm_z              = 1.0,
+    norm_z              = 0.0,
     auto_norm           = 0,
     auto_surf_area      = 0,
 }
@@ -126,6 +126,10 @@ function TOOL:LeftClick( trace )
     if CLIENT then return true end
     
     local coef = self:GetClientNumber("coef")
+    local surf_area = self:GetClientNumber("surf_area")
+    local norm_x = self:GetClientNumber("norm_x")
+    local norm_y = self:GetClientNumber("norm_y")
+    local norm_z = self:GetClientNumber("norm_z")
     
     if (trace.Entity.better_fin_Ent != nil) then
         local Data = {
