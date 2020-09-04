@@ -25,21 +25,17 @@ if SERVER then
     CreateConVar("sbox_max_better_fin", 20)
 end
 
--- Console Varibles
-CreateClientConVar("show_HUD_always", 0, true, false, "Show the HUD always or not (Better Fin Tool)")
-
--- Storing HUD settings for each Entity with Fin 2 applied to
 function networked(Entity, Data)
     Entity:SetNWBool("Active", true)
-    Entity:SetNWFloat("efficency", Data.efficiency)
+    Entity:SetNWFloat("coefficient", Data.coefficient)
 end
 function networked_remove_partially(Entity)
     Entity:SetNWBool("Active", true)
-    Entity:SetNWFloat("efficency", -99)
+    Entity:SetNWFloat("coefficient", -99)
 end
 function networked_remove(Entity)
     Entity:SetNWBool("Active", false)
-    Entity:SetNWFloat("efficency", -99999999)
+    Entity:SetNWFloat("coefficient", -99999999)
 end
 
 if CLIENT then
@@ -52,20 +48,14 @@ if CLIENT then
         
         local position = (Entity:LocalToWorld(Entity:OBBCenter())):ToScreen()
         
-        -- Check that the tool-gun is active with the fin-tool on
-        --local TOOL = LocalPlayer():GetTool("fin2")
-        local show_HUD_always = GetConVar("show_HUD_always", 0):GetInt()
-        --
-        if (show_HUD_always == 0) then
-            if Weapon:GetClass() != "gmod_tool" or Player:GetInfo("gmod_toolmode") != "fin2" then return end
-        end
+        if Weapon:GetClass() != "gmod_tool" or Player:GetInfo("gmod_toolmode") != "better_fin" then return end
         
         -- -99/nil = partially removed
         -- -99999999/-nil = undefined
         
         -- Get networked values of Entity
         local Active            = Entity:GetNWBool("Active", false)
-        local efficency         = Entity:GetNWFloat("efficency", -99999999)
+        local coefficient         = Entity:GetNWFloat("coefficient", -99999999)
         --
         if (Active) then
             -- Display values
@@ -73,47 +63,8 @@ if CLIENT then
                 local on = "On"
                 local off = "Off"
                 
-                
-                -- Partially removed (using reload (R)) fin
-                if ((lift == "nil") and (efficency == -99) and (pos_ang_opt == "-nil") and (pln == -99) and (wind == -99) and (cline == -99)) then
-                    efficency   = "nil"
-                    pos_ang_opt = pos_ang_opt
-                    lift        = lift
-                    pln         = "nil"
-                    wind        = "nil"
-                    cline       = "nil"
-                end
-                -- For old dupes
-                if ((lift == "nil") and (efficency == -99) and (pos_ang_opt == "-") and (pln == -99) and (wind == -99) and (cline == -99)) then
-                    efficency   = "nil"
-                    pos_ang_opt = "-"
-                    lift        = lift
-                    pln         = "nil"
-                    wind        = "nil"
-                    cline       = "nil"
-                end
-                --
-                if ((lift == "nil") and (efficency == -99) and (pos_ang_opt == off) and (pln == -99) and (wind == -99) and (cline == -99)) then
-                    efficency   = "nil"
-                    pos_ang_opt = "nil"
-                    lift        = lift
-                    pln         = "nil"
-                    wind        = "nil"
-                    cline       = "nil"
-                end
-                
                 -- Set text-string for display
-                local text0     = "Effic.: "..efficency
-                local text1     = "Lift: "..lift
-                local text2     = "F.S.D: "..pln
-                local text3     = "Wind: "..wind
-                local text4     = "Th. Cline: "..cline
-                local text5     = "Pos. & Ang. r. to Prop: "..pos_ang_opt
-                local text6_a   = "F"
-                local text6_b   = "i"
-                local text6_c   = "n"
-                local text6_d   = "II"
-                local text6_e   = "::"
+                local text0     = "Effic.: "..coefficient
 
                 -- Draw template Text for width- and height-calculations
                 surface.SetFont("Trebuchet18")
@@ -141,38 +92,6 @@ if CLIENT then
                 -- Text 0
                 surface.SetTextPos(positionX_text, positionY_text)
                 surface.DrawText(text0)
-                -- Text 1
-                surface.SetTextPos(positionX_text, (positionY_text + height_text + 3))
-                surface.DrawText(text1)
-                -- Text 2
-                surface.SetTextPos(positionX_text, (positionY_text + (height_text * 2 + 6)))
-                surface.DrawText(text2)
-                -- Text 3
-                surface.SetTextPos(positionX_text, (positionY_text + (height_text * 3 + 9)))
-                surface.DrawText(text3)
-                -- Text 4
-                surface.SetTextPos(positionX_text, (positionY_text + (height_text * 4 + 12)))
-                surface.DrawText(text4)
-                -- Text 5
-                surface.SetTextPos(positionX_text, (positionY_text + (height_text * 5 + 15)))
-                surface.DrawText(text5)
-                -- Text 6
-                surface.SetFont("Trebuchet24")
-                -- 6a
-                surface.SetTextPos(positionX_text + (width_text * 3) + 12, (positionY_text + height_text) - 31)
-                surface.DrawText(text6_a)
-                -- 6b
-                surface.SetTextPos(positionX_text + (width_text * 3) + 12, (positionY_text + height_text) - 13)
-                surface.DrawText(text6_b)
-                -- 6c
-                surface.SetTextPos(positionX_text + (width_text * 3) + 12, (positionY_text + height_text) + 2)
-                surface.DrawText(text6_c)
-                -- 6d
-                surface.SetTextPos(positionX_text + (width_text * 3) + 11, (positionY_text + height_text) + 28)
-                surface.DrawText(text6_d)
-                -- 6e
-                surface.SetTextPos(positionX_text + (width_text * 3) + 12, (positionY_text + height_text) + 45)
-                surface.DrawText(text6_e)
             end
         else return end
     end
@@ -185,13 +104,14 @@ function TOOL:LeftClick( trace )
 	if (SERVER and !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone )) then return false end
 	if CLIENT then return true end
 	
-    local coef         = self:GetClientNumber("coef")
+    local coef = self:GetClientNumber("coef")
 	
 	if (trace.Entity.better_fin_Ent != nil) then
 		local Data = {
 			coefficient = coef
-		table.Merge(trace.Entity.Fin2_Ent:GetTable(), Data)
-		duplicator.StoreEntityModifier(trace.Entity, "fin2", Data)
+        }
+		table.Merge(trace.Entity.better_fin_Ent:GetTable(), Data)
+		duplicator.StoreEntityModifier(trace.Entity, "better_fin", Data)
         
         -- Access on server- and client-side
         networked(trace.Entity, Data)
@@ -199,37 +119,19 @@ function TOOL:LeftClick( trace )
 		return true
 	end
 	
-	if !self:GetSWEP():CheckLimit("fin_2") then return false end
+	if !self:GetSWEP():CheckLimit("better_fin") then return false end
     
     local Data = {}
-    if (pos_ang_opt == "0") then
-        Data = {
-            pos		    = trace.Entity:WorldToLocal(trace.HitPos + trace.HitNormal * 4),
-            ang		    = trace.Entity:WorldToLocalAngles(trace.HitNormal:Angle()),
-            lift	    = lft,
-            pln		    = pln,
-            wind	    = wnd,
-            cline	    = cln,
-            efficiency  = eff,
-            pos_ang_opt = pos_ang_opt
-        }
-    else
-        Data = {
-            pos         = trace.Entity:WorldToLocal(trace.Entity:GetPos()),
-            ang         = trace.Entity:WorldToLocalAngles(trace.Entity:GetAngles()),
-            lift        = lft,
-            pln		    = pln,
-            wind	    = wnd,
-            cline	    = cln,
-            efficiency  = eff,
-            pos_ang_opt = pos_ang_opt
-        }
-    end
+    Data = {
+        coefficient = coef,
+        pos		    = trace.Entity:WorldToLocal(trace.HitPos + trace.HitNormal * 4),
+        ang		    = trace.Entity:WorldToLocalAngles(trace.HitNormal:Angle())
+    }
 	
-	local fin = MakeFin2Ent(self:GetOwner(), trace.Entity, Data)
+	local fin = MakeBetterFinEnt(self:GetOwner(), trace.Entity, Data)
 	
     -- Remove
-	undo.Create("fin_2")
+	undo.Create("better_fin")   
         undo.AddFunction(function()
             -- Remove networked-settings for Entity
             networked_remove(trace.Entity)
@@ -243,10 +145,10 @@ end
 
 --Copy fin
 function TOOL:RightClick( trace )
-	if (trace.Entity.Fin2_Ent != nil) then
+	if (trace.Entity.better_fin_Ent != nil) then
 		local fin = trace.Entity.better_fin_Ent
 		local ply = self:GetOwner()
-        ply:ConCommand("fin2_coef "..fin.coefficient)
+        ply:ConCommand("better_fin_coef "..fin.coefficient)
 		return true
 	end
 end
@@ -263,7 +165,7 @@ function TOOL:Reload( trace )
 end
 
 if SERVER then
-	function MakeFin2Ent( Player, Entity, Data )
+	function MakeBetterFinEnt( Player, Entity, Data )
 		if !Data then return end
 		if !Player:CheckLimit("better_fin") then return false end
 
@@ -278,9 +180,9 @@ if SERVER then
 		fin:SetParent(Entity)
         Entity:DeleteOnRemove(fin)
         -- Set
-		Entity.Fin2_Ent = fin
+		Entity.better_fin_Ent = fin
 
-		duplicator.StoreEntityModifier(Entity, "fibetter_finn2", Data)
+		duplicator.StoreEntityModifier(Entity, "better_fin", Data)
 		Player:AddCount("better_fin", fin)
 		Player:AddCleanup("better_fin", fin)
         
@@ -289,7 +191,7 @@ if SERVER then
 		
 		return fin
 	end
-	duplicator.RegisterEntityModifier("better_fin", MakeFin2Ent)
+	duplicator.RegisterEntityModifier("better_fin", MakeBetterFinEnt)
 end
 
 
@@ -299,5 +201,5 @@ function TOOL.BuildCPanel(CPanel)
     
     CPanel:AddItem(left2, ctrl2)
     -- Slider
-	CPanel:NumSlider("#Tool.better_fin.eff", "better_fin_eff", 0, 250, nil)
+	CPanel:NumSlider("#Tool.better_fin.coef", "better_fin_coef", 0, 2, nil)
 end

@@ -25,7 +25,7 @@ end
 	local wingNormal = self:GetForward()
 	
 	local liftMagnitude = -wingNormal:Dot(velocity) * velocity:Length()
-	local lift = wingNormal * liftMagnitude * self.efficiency / 100.0
+	local lift = wingNormal * liftMagnitude * self.coefficient / 100.0
 	
 	physobj:ApplyForceCenter(lift)
 	
