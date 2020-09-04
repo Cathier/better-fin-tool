@@ -3,7 +3,7 @@ AddCSLuaFile( "shared.lua" )
 
 include("shared.lua")
 
-CreateClientConVar("fin2_delete_dup_onremove", 1, true, false, "Delete the duplication on remove or not (Fin II)")
+CreateClientConVar("better_fin_delete_dup_onremove", 1, true, false, "Delete the duplication on remove or not (Fin II)")
 
 function ENT:Initialize()
 	math.randomseed(CurTime())
@@ -11,9 +11,9 @@ function ENT:Initialize()
 end   
 
 function ENT:OnRemove()
-	if (GetConVar("fin2_delete_dup_onremove"):GetBool() == true) then
-		duplicator.ClearEntityModifier(self.Entity:GetParent(), "fin2")
-		self.Entity:GetParent().Fin2_Ent = nil
+	if (GetConVar("better_fin_delete_dup_onremove"):GetBool() == true) then
+		duplicator.ClearEntityModifier(self.Entity:GetParent(), "better_fin")
+		self.Entity:GetParent().better_fin_Ent = nil
 	end
 end
 
