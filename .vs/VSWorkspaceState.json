@@ -1,0 +1,13 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\lua",
+    "\\lua\\entities",
+    "\\lua\\entities\\better_fin",
+    "\\lua\\weapons",
+    "\\lua\\weapons\\gmod_tool",
+    "\\lua\\weapons\\gmod_tool\\stools"
+  ],
+  "SelectedNode": "\\lua\\weapons\\gmod_tool\\stools\\better-fin.lua",
+  "PreviewInSolutionExplorer": false
+}
