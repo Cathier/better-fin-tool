@@ -7,7 +7,7 @@ To-do list:
 - [ ] Clean up code and comments
 - [ ] Replace entity-per-fin with a list of fins per parent (to be discussed)
 - [ ] Make dupe-friendly?
-- [ ] Add support for multiple differen lift models
+- [ ] Add support for multiple different lift models
 - [ ] Add more realistic lift models
 - [ ] Make lift calculations integrate over the area of the wing
 - [ ] Clean up or remake tool menu
