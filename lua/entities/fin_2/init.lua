@@ -18,16 +18,23 @@ function ENT:OnRemove()
 end
 
  function ENT:Think()
-	local physobj = self.ent:GetPhysicsObject()
-	if !physobj:IsValid() then return end
+	-- Find the ancestor
+	local physObj = self.ent
+	while IsValid(physObj:GetParent()) do
+		physObj = physObj:GetParent()
+	end
+	physObj = physObj:GetPhysicsObject()
+	if not physObj:IsValid() then return end
 	
-	local velocity = physobj:GetVelocity()
-	local wingNormal = self:GetUp()
+	local velocity = physObj:GetVelocity()
+	local wingNormal = self:GetForward()	-- The forward of the fin entity is alligned with the normal
 	
 	local liftMagnitude = -wingNormal:Dot(velocity) * velocity:Length()
-	local lift = wingNormal * liftMagnitude * eff
+	local efficency = self.ent:GetNWFloat("efficency", -99999999)
+	local lift = wingNormal * liftMagnitude * efficency * 1e-3
 	
-	physobj:ApplyForceCenter(lift)
+	print(physObj:GetPos() - self:GetPos())
+	physObj:ApplyForceOffset(lift, self:GetPos())
 	
 	self.Entity:NextThink( CurTime())
 	return true 
