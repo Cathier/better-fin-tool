@@ -30,10 +30,9 @@ end
 	local wingNormal = self:GetForward()	-- The forward of the fin entity is alligned with the normal
 	
 	local liftMagnitude = -wingNormal:Dot(velocity) * velocity:Length()
-	local efficency = self.ent:GetNWFloat("efficency", -99999999)
+	local efficency = self.ent:GetNWFloat("efficency", -99999999)	-- Probably not the correct way to do this, but doesn't error
 	local lift = wingNormal * liftMagnitude * efficency * 1e-3
 	
-	print(physObj:GetPos() - self:GetPos())
 	physObj:ApplyForceOffset(lift, self:GetPos())
 	
 	self.Entity:NextThink( CurTime())
