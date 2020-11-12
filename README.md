@@ -1,2 +1,2 @@
-# fin2
-The Fin 2 tool for Garry's Mod
+# Better Fin Tool
+The Fin tool for Garry's Mod, but better!

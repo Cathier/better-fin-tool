@@ -326,17 +326,18 @@ if SERVER then
 		if !Player:CheckLimit("fin_2") then return false end
 
 		local fin = ents.Create( "fin_2" )
-			if (Data.pos != nil) then fin:SetPos(Entity:LocalToWorld(Data.pos)) end
-			fin:SetAngles(Entity:LocalToWorldAngles(Data.ang))
-			fin.ent			= Entity
+        if (Data.pos != nil) then fin:SetPos(Entity:LocalToWorld(Data.pos)) end
+            fin:SetAngles(Entity:LocalToWorldAngles(Data.ang))
+            fin.ent			= Entity
             fin.efficiency  = Data.efficiency
-            -- Old entities e.g. made with duplicate do not have this feature
-            if (Data.pos_ang_opt != nil) then fin.pos_ang_opt = Data.pos_ang_opt end
-			fin.lift		= Data.lift
-			fin.pln			= Data.pln
-			fin.wind		= Data.wind
-			fin.cline		= Data.cline
-		fin:Spawn()
+        -- Old entities e.g. made with duplicate do not have this feature
+        if (Data.pos_ang_opt != nil) then fin.pos_ang_opt = Data.pos_ang_opt end
+            fin.lift		= Data.lift
+            fin.pln			= Data.pln
+            fin.wind		= Data.wind
+            fin.cline		= Data.cline
+        fin:SetPos(Entity:GetPos()) -- Place the fin at the center of the parent prop
+        fin:Spawn()
 		fin:Activate()
         --
 		fin:SetParent(Entity)
