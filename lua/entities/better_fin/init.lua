@@ -13,25 +13,22 @@ end
 function ENT:OnRemove()
 	if (GetConVar("fin2_delete_dup_onremove"):GetBool() == true) then
 		duplicator.ClearEntityModifier(self.Entity:GetParent(), "better_fin")
-		self.Entity:GetParent().Fin2_Ent = nil
+		self.Entity:GetParent().better_fin = nil
 	end
 end
 
- function ENT:Think()
-	-- Find the ancestor
-	local physObj = self.ent
-	while IsValid(physObj:GetParent()) do
-		physObj = physObj:GetParent()
+function ENT:Think()
+	if not self.ancestor:IsValid() then 
+		self.ancestor = BF_getAncestor(self)
 	end
-	physObj = physObj:GetPhysicsObject()
-	if not physObj:IsValid() then return end
+
+	local physObj = self.ancestor:GetPhysicsObject()
 	
 	local velocity = physObj:GetVelocity()
 	local wingNormal = self:GetForward()	-- The forward of the fin entity is alligned with the normal
 	
 	local liftMagnitude = -wingNormal:Dot(velocity) * velocity:Length()
-	local efficency = self.ent:GetNWFloat("efficency", -99999999)	-- Probably not the correct way to do this, but doesn't error
-	local lift = wingNormal * liftMagnitude * efficency * 1e-3
+	local lift = wingNormal * liftMagnitude * self.efficiency * physObj:GetMass() * 1e-6
 	
 	physObj:ApplyForceOffset(lift, self:GetPos())
 	

@@ -95,3 +95,16 @@ function fintool.setmaxeff(player, command, arg)
 end 
 
 concommand.Add("fintool_setmaxeff", fintool.setmaxeff)
+
+-- Returns the ancestor (parent of the parent...) of an entity
+local function getAncestor(ent)
+    if not ent:IsValid() then return nil end
+
+    local ancestor = ent
+    while ancestor:GetParent():IsValid() do
+        ancestor = ancestor:GetParent()
+    end
+    return ancestor
+end
+
+BF_getAncestor = getAncestor
