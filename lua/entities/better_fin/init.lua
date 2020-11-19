@@ -12,7 +12,7 @@ end
 
 function ENT:OnRemove()
 	if (GetConVar("fin2_delete_dup_onremove"):GetBool() == true) then
-		duplicator.ClearEntityModifier(self.Entity:GetParent(), "fin2")
+		duplicator.ClearEntityModifier(self.Entity:GetParent(), "better_fin")
 		self.Entity:GetParent().Fin2_Ent = nil
 	end
 end

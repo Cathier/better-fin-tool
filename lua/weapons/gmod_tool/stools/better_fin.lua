@@ -16,7 +16,7 @@ cleanup.Register( "fin_2" )
 
 -- // Add Default Language translation (saves adding it to the txt files)
 if CLIENT then
-	language.Add( "Tool.fin2.name", "Better Fin Tool" )
+	language.Add( "Tool.better_fin.name", "Better Fin Tool" )
 	language.Add( "Tool.fin2.desc", "Make a Fin out of a physics-prop." )
 	language.Add( "Tool.fin2.0", "Left-Click to apply settings; Right-Click to copy" )
 	language.Add( "Tool.fin2.eff", "Efficency of Fin:" )
@@ -77,7 +77,7 @@ if CLIENT then
         local show_HUD_always = GetConVar("show_HUD_always", 0):GetInt()
         --
         if (show_HUD_always == 0) then
-            if Weapon:GetClass() != "gmod_tool" or Player:GetInfo("gmod_toolmode") != "fin2" then return end
+            if Weapon:GetClass() != "gmod_tool" or Player:GetInfo("gmod_toolmode") != "better_fin" then return end
         end
         
         -- -99/nil = partially removed
@@ -243,7 +243,7 @@ function TOOL:LeftClick( trace )
             pos_ang_opt     = pos_ang_opt
 		}
 		table.Merge(trace.Entity.Fin2_Ent:GetTable(), Data)
-		duplicator.StoreEntityModifier(trace.Entity, "fin2", Data)
+		duplicator.StoreEntityModifier(trace.Entity, "better_fin", Data)
         
         -- Access on server- and client-side
         networked(trace.Entity, Data)
@@ -251,7 +251,7 @@ function TOOL:LeftClick( trace )
 		return true
 	end
 	
-	if !self:GetSWEP():CheckLimit("fin_2") then return false end
+	if !self:GetSWEP():CheckLimit("better_fin") then return false end
     
     local Data = {}
     if (pos_ang_opt == "0") then
@@ -323,9 +323,9 @@ end
 if SERVER then
 	function MakeFin2Ent( Player, Entity, Data )
 		if !Data then return end
-		if !Player:CheckLimit("fin_2") then return false end
+		if !Player:CheckLimit("better_fin") then return false end
 
-		local fin = ents.Create( "fin_2" )
+		local fin = ents.Create( "better_fin" )
         if (Data.pos != nil) then fin:SetPos(Entity:LocalToWorld(Data.pos)) end
             fin:SetAngles(Entity:LocalToWorldAngles(Data.ang))
             fin.ent			= Entity
@@ -345,16 +345,16 @@ if SERVER then
         -- Set
 		Entity.Fin2_Ent = fin
 
-		duplicator.StoreEntityModifier(Entity, "fin2", Data)
-		Player:AddCount("fin_2", fin)
-		Player:AddCleanup("fin_2", fin)
+		duplicator.StoreEntityModifier(Entity, "better_fin", Data)
+		Player:AddCount("better_fin", fin)
+		Player:AddCleanup("better_fin", fin)
         
         -- Access on server- and client-side
         networked(Entity, Data)
 		
 		return fin
 	end
-	duplicator.RegisterEntityModifier("fin2", MakeFin2Ent)
+	duplicator.RegisterEntityModifier("better_fin", MakeFin2Ent)
 end
 
 
