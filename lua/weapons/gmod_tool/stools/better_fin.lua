@@ -5,7 +5,8 @@ TOOL.Command		= nil
 TOOL.ConfigName		= ""
 
 TOOL.ClientConVar = {
-	efficiency = 70
+	efficiency = 70,
+    show_HUD_always = 0
 }
 
 cleanup.Register( "better_fin" )
@@ -25,15 +26,12 @@ if SERVER then
     CreateConVar("sbox_maxfin_2", 20)
 end
 
--- Console Varibles
-CreateClientConVar("show_HUD_always", 0, true, false, "Show the HUD always or not (Fin II)")
-
 -- Setting network variables needed for the HUD
 local function setNetVariables(ent, data)
     ent:SetNWFloat("efficiency", data.efficiency)
 end
 function removeNetVariables(ent)
-    ent:SetNWFloat("efficiency", nil)
+    ent:SetNWFloat("efficiency", -1)    -- Meant to signal the removal of the fin, for some reason nil doesn't work
 end
 
 if CLIENT then
@@ -45,7 +43,7 @@ if CLIENT then
         if (not Player:IsValid() or not Entity:IsValid() or not Weapon:IsValid()) then return end
         
         -- Check that the tool-gun is active with the fin-tool on
-        local show_HUD_always = GetConVar("show_HUD_always", 0):GetInt()
+        local show_HUD_always = GetConVar("git"):GetBool()
         if not show_HUD_always then
             if Weapon:GetClass() != "gmod_tool" or Player:GetInfo("gmod_toolmode") != "better_fin" then return end
         end
@@ -57,7 +55,7 @@ if CLIENT then
         local screen_pos = Entity:GetPos():ToScreen()
 
         --PrintTable(net_vars)
-        if efficiency != nil then
+        if efficiency != -1 then
             -- Set text-string for display
             local header = "Fin Properties"
             local text = 
@@ -157,9 +155,9 @@ end
 
 function TOOL:Reload( trace )
     if (trace.Entity.better_fin != nil) then
+        removeNetVariables(trace.Entity)
         trace.Entity.better_fin:Remove()
 		trace.Entity.better_fin = nil
-        removeNetVariables(trace.Entity)
 		return true
 	end
 end
