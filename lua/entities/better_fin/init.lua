@@ -23,12 +23,13 @@ function ENT:Think()
 	end
 
 	local physObj = self.ancestor:GetPhysicsObject()
-	
-	local velocity = physObj:GetVelocity()
+
+	-- Get the linear velocity of the fin based on the linear and rotational velocities of the ancestor
+	local velocity = physObj:GetVelocityAtPoint(self:GetPos())
 	local wingNormal = self:GetForward()	-- The forward of the fin entity is alligned with the normal
 	
 	local liftMagnitude = -wingNormal:Dot(velocity) * velocity:Length()
-	local lift = wingNormal * liftMagnitude * self.efficiency * physObj:GetMass() * 1e-6
+	local lift = wingNormal * liftMagnitude * self.efficiency * physObj:GetMass() * 2e-7
 	
 	physObj:ApplyForceOffset(lift, self:GetPos())
 	
