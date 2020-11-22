@@ -29,22 +29,24 @@ function ENT:OnRemove()
 end
 
 function ENT:Think()
-	
 	if not IsValid(self.ancestor) then
 		self.ancestor = BF_getAncestor(self)				-- Find the new ancestor
 	end
 
 	local physObj = self.ancestor:GetPhysicsObject()
 
+	local delta_t = CurTime() - self.last_think
+
 	-- Get the linear velocity of the fin based on the linear and rotational velocities of the ancestor
 	local velocity = physObj:GetVelocityAtPoint(self:GetPos())
 	local wingNormal = self:GetForward()	-- The forward of the fin entity is alligned with the normal
 	
-	local liftMagnitude = -wingNormal:Dot(velocity) * velocity:Length()
-	local lift = wingNormal * liftMagnitude * self.efficiency * physObj:GetMass() * 5e-7
+	local liftMagnitude = math.Clamp(-wingNormal:Dot(velocity) * velocity:Length(), -1e6, 1e6)	-- Clamp the magnitude to avoid spazz
+	local lift = wingNormal * liftMagnitude * self.efficiency * physObj:GetMass() * delta_t * 3e-5
 	
 	physObj:ApplyForceOffset(lift, self:GetPos())
 	
+	self.last_think = CurTime()
 	self.Entity:NextThink(CurTime())
 	return true 
 end

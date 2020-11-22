@@ -110,7 +110,7 @@ function TOOL:LeftClick( trace )
     -- Remove
 	undo.Create("better_fin")
         undo.AddFunction(function()
-            entity.better_fin:Remove()
+            if (IsValid(entity.better_fin) then entity.better_fin:Remove() end
         end)
         undo.AddEntity(fin)
         undo.SetPlayer(self:GetOwner())
