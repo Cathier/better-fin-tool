@@ -7,6 +7,7 @@ include("shared.lua")
 function ENT:setNetworkVariables()
 	local parent = self:GetParent()
 	parent:SetNWFloat("efficiency", self.efficiency)
+	parent:SetNWString("model", self.model)
 end
 
 -- Removes the network variables from the fin's parent
@@ -30,21 +31,13 @@ end
 
 function ENT:Think()
 	if not IsValid(self.ancestor) then
-		self.ancestor = BF_getAncestor(self)				-- Find the new ancestor
+		self.ancestor = better_fin.getAncestor(self)	-- Find the new ancestor
 	end
 
-	local physObj = self.ancestor:GetPhysicsObject()
-
+	local phys_obj = self.ancestor:GetPhysicsObject()
 	local delta_t = CurTime() - self.last_think
 
-	-- Get the linear velocity of the fin based on the linear and rotational velocities of the ancestor
-	local velocity = physObj:GetVelocityAtPoint(self:GetPos())
-	local wingNormal = self:GetForward()	-- The forward of the fin entity is alligned with the normal
-	
-	local liftMagnitude = math.Clamp(-wingNormal:Dot(velocity) * velocity:Length(), -1e6, 1e6)	-- Clamp the magnitude to avoid spazz
-	local lift = wingNormal * liftMagnitude * self.efficiency * physObj:GetMass() * delta_t * 3e-5
-	
-	physObj:ApplyForceOffset(lift, self:GetPos())
+	self.model_func(phys_obj, self, delta_t)	-- Call the flight model function
 	
 	self.last_think = CurTime()
 	self.Entity:NextThink(CurTime())

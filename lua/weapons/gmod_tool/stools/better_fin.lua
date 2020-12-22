@@ -6,7 +6,16 @@ TOOL.ConfigName		= ""
 
 TOOL.ClientConVar = {
 	efficiency = 70,
-    show_HUD_always = 0
+	zla = 10,           -- Zero lift angle
+    show_HUD_always = 0,
+    model = "wing"
+}
+
+-- These must have the same name as the respective function, as the client ConVar uses this value to find the respective function
+local models_text = 
+{
+    wing = "Realistic wing model. Good lift-to-drag ratio when not stalling. Stalls at around 20 degrees of angle of attack",
+    simplified = "Simplified \"air deflector\". Works simmiarly to fin2. Bad lift-to-drag ratio, but does not stall"
 }
 
 CreateClientConVar("show_HUD_always", "0", true, false)
@@ -25,7 +34,7 @@ if CLIENT then
 end
 
 if SERVER then
-    CreateConVar("sbox_maxfin_2", 20)
+    CreateConVar("sbox_max_better_fin", 20)
 end
 
 if CLIENT then
@@ -43,13 +52,15 @@ if CLIENT then
         end
         
         local efficiency = entity:GetNWFloat("efficiency", -1)
+        local model = entity:GetNWString("model", "")
 
         if efficiency != -1 && efficiency != nil then
             -- Set text-string for display
             local header = "Fin Properties"
             local text = 
             {
-                "Efficiency:  "..efficiency,
+                "Efficiency:    "..efficiency,
+                "Flight model:  "..model
             }
 
             -- Box size and pos
@@ -83,7 +94,7 @@ if CLIENT then
         end
     end
     
-    hook.Add("HUDPaint", "showValuesFinHUD", showValuesFinHUD)  -- This should probably moved elsewhere (where it'll run once)
+    hook.Add("HUDPaint", "showValuesFinHUD", showValuesFinHUD)
 end
 
 function TOOL:LeftClick( trace )
@@ -91,14 +102,18 @@ function TOOL:LeftClick( trace )
 	if SERVER and !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) then return false end
 	if CLIENT then return true end
 	
-    local efficiency = self:GetClientNumber("efficiency")
 	local entity = trace.Entity
     local data = 
     {
+        -- Load and validate the data
         pos         = trace.Entity:GetPos(),
         ang         = trace.HitNormal:Angle(),
-        efficiency  = efficiency
+        efficiency  = math.Clamp(self:GetClientNumber("efficiency"), 0, 100),    -- Clamp so people can't make trillion efficiency fins
+        zla         = math.Clamp(self:GetClientNumber("zla"), 0, 10),
+        model       = self:GetClientInfo("model")
     }
+    -- Validate some extra data
+    if not models_text[data.model] then data.model = "wing" end
 
     if entity.better_fin == nil then    -- If entity does not have a fin
         if !self:GetSWEP():CheckLimit("better_fin") then return false end
@@ -110,7 +125,7 @@ function TOOL:LeftClick( trace )
     -- Remove
 	undo.Create("better_fin")
         undo.AddFunction(function()
-            if (IsValid(entity.better_fin) then entity.better_fin:Remove() end
+            if IsValid(entity.better_fin) then entity.better_fin:Remove() end
         end)
         undo.AddEntity(fin)
         undo.SetPlayer(self:GetOwner())
@@ -125,6 +140,7 @@ function TOOL:RightClick( trace )
 		local fin = trace.Entity.better_fin
 		local ply = self:GetOwner()
         ply:ConCommand("better_fin_efficiency "..fin.efficiency)
+        ply:ConCommand("better_fin_model "..fin.model)
 		return true
 	end
 end
@@ -157,10 +173,14 @@ if SERVER then
 	end
 
     function updateBetterFinEnt(fin, data)
-        fin:SetPos(data.pos)                    -- Set it at the parent's position
-        fin:SetAngles(data.ang)                 -- With the same angle
-        fin.ancestor    = BF_getAncestor(fin)   -- Find the ancestor
-        fin.efficiency  = data.efficiency       -- Set the efficiency
+        fin:SetPos(data.pos)                            -- Set it at the parent's position
+        fin:SetAngles(data.ang)                         -- With the same angle
+        fin.ancestor    = better_fin.getAncestor(fin)   -- Find the ancestor
+        fin.efficiency  = data.efficiency               -- Set the efficiency
+        fin.model       = data.model                    -- Set the flight model
+        fin.model_func  = better_fin.models[data.model] `
+        print(model)
+        print(model_func)
         -- Network the necessary variables
         fin:setNetworkVariables()
     end
@@ -168,10 +188,27 @@ if SERVER then
 	duplicator.RegisterEntityModifier("better_fin", makeBetterFinEnt)
 end
 
+
+
 if CLIENT then
     function TOOL.BuildCPanel(CPanel)
+        -- Flight model selector
+        local cbox = CPanel:ComboBox("Flight model", "better_fin_model")
+        cbox:AddChoice("Wing", "wing", true)
+        cbox:AddChoice("Simplified", "simplified", false)
+        local model_explanation = CPanel:ControlHelp(models_text.wing)
+
+        function cbox:OnSelect(index, text, data)
+            model_explanation:SetText(models_text[data])
+            GetConVar("better_fin_model"):SetString(data)
+        end
+
         -- Slider to select the efficiency
         CPanel:NumSlider("Efficiency", "better_fin_efficiency", 0, 100, 0)
+        CPanel:ControlHelp("Controls how much force (both lift and drag) the fin produces")
+        -- Slider for the zero-lift angle
+        CPanel:NumSlider("Zero-lift angle", "better_fin_zla", 0, 10, 0)
+        CPanel:ControlHelp("The negative angle of attack at which the fin produces no lift. When flying level, setting this high will provide more lift, setting it to zero will provide none")
         -- Checkbox to select wether the HUD always shows, or only with the toolgun
         CPanel:CheckBox("Always show the HUD", "show_HUD_always")
     end
