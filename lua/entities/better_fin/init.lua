@@ -6,8 +6,12 @@ include("shared.lua")
 -- Networks key variables onto the fin's parent
 function ENT:setNetworkVariables()
 	local parent = self:GetParent()
+	-- Variables to display in the HUD
 	parent:SetNWFloat("efficiency", self.efficiency)
 	parent:SetNWString("model", self.model)
+	-- Orientation of the fin to display the orientation arrows
+	local local_ang = parent:WorldToLocalAngles(self:GetAngles())
+	parent:SetNWAngle("angle", local_ang)
 end
 
 -- Removes the network variables from the fin's parent
