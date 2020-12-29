@@ -16,6 +16,7 @@ if SERVER then
         fin.efficiency  = data.efficiency               -- Set the efficiency
         fin.model       = data.model                    -- Set the flight model
         fin.model_func  = better_fin.models[data.model]
+        fin.zla         = data.zla
         -- Network the necessary variables
         fin:setNetworkVariables()
     end
@@ -40,8 +41,6 @@ if SERVER then
 
 	duplicator.RegisterEntityModifier("better_fin", makeBetterFinEnt)
 
-
-
     -- Create or update a fin
     function TOOL:LeftClick( trace )
         if not trace.Hit then return false end
@@ -63,14 +62,18 @@ if SERVER then
             local right = forward:Cross(up)
             -- Get the orientation of the fin based on the forward vector and the angle to the right
             local angle = forward:Angle()
-            angle:RotateAroundAxis(forward, (math.acos(angle:Up():Dot(right))*180/math.pi) - 90)
-            local data = 
+            -- Orient it to alight the forward and up vectors
+            angle:RotateAroundAxis(forward, -math.deg(math.asin(math.Clamp(angle:Up():Dot(right), -1, 1))))
+            -- Rotate it to match the selected zero lift angle
+            local zla = math.Clamp(self:GetClientNumber("zla"), 0, 10)
+            angle:RotateAroundAxis(right, zla)
+            local data =
             {
                 -- Load and validate the data
                 pos         = trace.Entity:GetPos(),
                 ang         = angle,
                 efficiency  = math.Clamp(self:GetClientNumber("efficiency"), 0, 100),    -- Clamp so people can't make trillion efficiency fins
-                zla         = math.Clamp(self:GetClientNumber("zla"), 0, 10),
+                zla         = zla,
                 model       = self:GetClientInfo("model")
             }
             -- Validate some extra data
@@ -274,7 +277,7 @@ else
         CPanel:ControlHelp("Controls how much force (both lift and drag) the fin produces")
         -- Slider for the zero-lift angle
         CPanel:NumSlider("Zero-lift angle", "better_fin_zla", 0, 10, 0)
-        CPanel:ControlHelp("The negative angle of attack at which the fin produces no lift. When flying level, setting this high will provide more lift, setting it to zero will provide none")
+        CPanel:ControlHelp("The negative angle of attack at which the fin produces no lift. When the fin is level, a high ZLA will provide more lift, while setting it to zero will provide none")
         -- Checkbox to select wether the HUD always shows, or only with the toolgun
         CPanel:CheckBox("Always show the HUD", "better_fin_show_HUD_always")
     end
