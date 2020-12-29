@@ -22,24 +22,24 @@ if SERVER then
     end
 
     local function makeBetterFinEnt(Player, ent, data)
-		if !Player:CheckLimit("better_fin") then return false end
+        if !Player:CheckLimit("better_fin") then return false end
 
-		local fin = ents.Create("better_fin")   -- Create a fin  
+        local fin = ents.Create("better_fin")   -- Create a fin
         fin:Spawn()                             -- Spawn, parent, etc.
-		fin:Activate()
-		fin:SetParent(ent)
+        fin:Activate()
+        fin:SetParent(ent)
         ent:DeleteOnRemove(fin)
 
         updateBetterFinEnt(ent, fin, data)   -- Update it with the data
-		ent.better_fin = fin            -- Assign the new entity to the phys_prop
+        ent.better_fin = fin            -- Assign the new entity to the phys_prop
 
         better_fin.add_to_table(fin)    -- Add the fin to the global table
-		duplicator.StoreEntityModifier(ent, "better_fin", data)
-		Player:AddCount("better_fin", fin)
-		Player:AddCleanup("better_fin", fin)
-	end
+        duplicator.StoreEntityModifier(ent, "better_fin", data)
+        Player:AddCount("better_fin", fin)
+        Player:AddCleanup("better_fin", fin)
+    end
 
-	duplicator.RegisterEntityModifier("better_fin", makeBetterFinEnt)
+    duplicator.RegisterEntityModifier("better_fin", makeBetterFinEnt)
 
     -- Create or update a fin
     function TOOL:LeftClick( trace )
@@ -80,7 +80,7 @@ if SERVER then
             if not better_fin.models[data.model] then data.model = "wing" end   -- If flight model function doesn't exist, replace by a default one`
 
             -- If the entity does not have a fin
-            if entity.better_fin == nil then    
+            if entity.better_fin == nil then
                 if !self:GetSWEP():CheckLimit("better_fin") then return false end
                 makeBetterFinEnt(self:GetOwner(), entity, data) -- Create a new one
                 -- Add an undo
@@ -139,12 +139,12 @@ else
         return true
     end
 
-	language.Add( "Tool.better_fin.name", "Better Fin Tool" )
-	language.Add( "Tool.better_fin.desc", "Create fins that produce lift" )
-	language.Add( "Undone_better_fin", "Undone Fin" )
-	language.Add( "Cleanup_better_fin", "Better fin" )
-	language.Add( "Cleaned_better_fin", "Cleaned up all Fins" )
-	language.Add( "sboxlimit_better_fin", "You've reached the Fin-limit!" )
+    language.Add( "Tool.better_fin.name", "Better Fin Tool" )
+    language.Add( "Tool.better_fin.desc", "Create fins that produce lift" )
+    language.Add( "Undone_better_fin", "Undone Fin" )
+    language.Add( "Cleanup_better_fin", "Better fin" )
+    language.Add( "Cleaned_better_fin", "Cleaned up all Fins" )
+    language.Add( "sboxlimit_better_fin", "You've reached the Fin-limit!" )
 
     TOOL.Information = {
         { name = "left_select",         stage = 0 },
@@ -168,14 +168,14 @@ else
     }
 
     -- These must have the same name as the respective function, as the client ConVar uses this value to find the respective function
-    local models_text = 
+    local models_text =
     {
-        wing = 
+        wing =
         {
             name = "Wing",
             explanation = "Realistic wing model. Good lift-to-drag ratio when not stalling. Stalls at around 20 degrees of angle of attack"
         },
-        simplified = 
+        simplified =
         {
             name = "Simplified",
             explanation = "Simplified \"air deflector\". Works simmiarly to fin2. Bad lift-to-drag ratio, but does not stall"
@@ -188,20 +188,20 @@ else
         local entity   = Player:GetEyeTrace().Entity
         local Weapon   = Player:GetActiveWeapon()
         if (not IsValid(Player) or not IsValid(entity) or not IsValid(Weapon)) then return end
-        
+
         -- Check if the toolgun is in hand, and if the better fin tool is selected
         local show_HUD_always = GetConVar("better_fin_show_HUD_always", 0):GetBool()
         if not show_HUD_always then
             if Weapon:GetClass() != "gmod_tool" or Player:GetInfo("gmod_toolmode") != "better_fin" then return end
         end
-        
+
         local efficiency = entity:GetNWFloat("efficiency", -1)
         local model = entity:GetNWString("model", "")
 
         if efficiency != -1 and efficiency != nil then
             -- Set text-string for display
             local header = "Fin Properties"
-            local text = 
+            local text =
             {
                 "Efficiency:    "..efficiency,
                 "Flight model:  "..models_text[model].name
@@ -295,4 +295,3 @@ end
 
 
 
-    
