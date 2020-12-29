@@ -21,7 +21,7 @@ function ENT:removeNetworkVariables()
 end
 
 function ENT:Initialize()
-    self.Entity:SetMoveType( MOVETYPE_NONE )
+    self:SetMoveType( MOVETYPE_NONE )
     self.last_think = CurTime()
 end
 
@@ -44,7 +44,7 @@ function ENT:Think()
     self.model_func(phys_obj, self, delta_t)	-- Call the flight model function
 
     self.last_think = CurTime()
-    self.Entity:NextThink(CurTime())
+    self:NextThink(CurTime())
     return true
 end
 
