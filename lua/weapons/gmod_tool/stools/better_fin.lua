@@ -9,9 +9,9 @@ if SERVER then
 
     CreateConVar("sbox_max_better_fin", 20)
 
-    local function updateBetterFinEnt(fin, data)
-        fin:SetPos(data.pos)                            -- Set it at the parent's position
-        fin:SetAngles(data.ang)                         -- Set it's angle
+    local function updateBetterFinEnt(ent, fin, data)
+        fin:SetPos(ent:LocalToWorld(data.pos))          -- Set it at the parent's position
+        fin:SetAngles(ent:LocalToWorldAngles(data.ang)) -- Set it's angle
         fin.ancestor    = better_fin.getAncestor(fin)   -- Find the ancestor
         fin.efficiency  = data.efficiency               -- Set the efficiency
         fin.model       = data.model                    -- Set the flight model
@@ -30,7 +30,7 @@ if SERVER then
 		fin:SetParent(ent)
         ent:DeleteOnRemove(fin)
 
-        updateBetterFinEnt(fin, data)   -- Update it with the data
+        updateBetterFinEnt(ent, fin, data)   -- Update it with the data
 		ent.better_fin = fin            -- Assign the new entity to the phys_prop
 
         better_fin.add_to_table(fin)    -- Add the fin to the global table
@@ -70,8 +70,8 @@ if SERVER then
             local data =
             {
                 -- Load and validate the data
-                pos         = trace.Entity:GetPos(),
-                ang         = angle,
+                pos         = Vector(0, 0, 0),  -- This might change in the future, but for now it's the local position of the parent entity's center
+                ang         = entity:WorldToLocalAngles(angle),
                 efficiency  = math.Clamp(self:GetClientNumber("efficiency"), 0, 100),    -- Clamp so people can't make trillion efficiency fins
                 zla         = zla,
                 model       = self:GetClientInfo("model")
@@ -92,7 +92,7 @@ if SERVER then
                     undo.SetPlayer(self:GetOwner())
                 undo.Finish()
             else
-                updateBetterFinEnt(entity.better_fin, data)     -- Otherwise update the existing one
+                updateBetterFinEnt(entity, entity.better_fin, data)     -- Otherwise update the existing one
             end
 
             self:SetStage(0)
