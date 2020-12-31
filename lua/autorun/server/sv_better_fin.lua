@@ -1,17 +1,11 @@
-
 better_fin =
 {
-    fins = {},
-    fin_idx = 0,
-    models = {}
+    fins = {},      -- Global table of fins
+    fin_idx = 0,    -- Index of the next fin to check
+    models = {}     -- Table of flight model functions
 }
 
 function better_fin.initialize_()
-    better_fin.fins = {}	-- Global table of fins
-    better_fin.fin_idx = 0	-- Index of the next fin to check
-
-    better_fin.models = {}	-- Table of flight model functions
-
     print("[Better Fin] Initializing")
 end
 hook.Add("Initialize", "better_fininitialize_", better_fin.initialize_)
