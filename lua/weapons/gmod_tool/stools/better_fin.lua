@@ -19,6 +19,7 @@ if SERVER then
         fin.zla         = data.zla
         -- Network the necessary variables
         fin:setNetworkVariables()
+        duplicator.StoreEntityModifier(ent, "better_fin", data)
     end
 
     local function makeBetterFinEnt(Player, ent, data)
@@ -34,7 +35,6 @@ if SERVER then
         ent.better_fin = fin            -- Assign the new entity to the phys_prop
 
         better_fin.add_to_table(fin)    -- Add the fin to the global table
-        duplicator.StoreEntityModifier(ent, "better_fin", data)
         Player:AddCount("better_fin", fin)
         Player:AddCleanup("better_fin", fin)
     end

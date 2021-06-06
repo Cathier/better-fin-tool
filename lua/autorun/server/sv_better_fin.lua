@@ -52,6 +52,17 @@ function better_fin.getAncestor(ent)
     return ancestor
 end
 
+-- Filters (to avoid spazz) and clamps the fin acceleration
+local function filterAcceleration(fin, accel)
+    -- Filter
+    accel = fin.last_accel and fin.last_accel * 0.6 + accel * 0.4 or accel
+    -- Clamp
+    accel = accel:Length() > 200 and accel:GetNormalized() * 200 or accel
+    fin.last_accel = accel
+
+    return accel
+end
+
 -- Basic wing, starts stalling at roughly 15 degrees
 -- Modeled after a real symmetrical airfoil, shifted by the zero lift angle
 -- https://www.desmos.com/calculator/mdhzwcpj2k
@@ -61,23 +72,23 @@ function better_fin.models.wing(phys_obj, fin, delta_t)
     local wing_normal = fin:GetUp()
     local wing_forward = fin:GetForward()
     local wing_right = fin:GetRight()
+    -- The lift vector is perpendicular to the velocity and coplanar with the wing's normal vector
+    local lift_vec = wing_right:Cross(vel):GetNormalized()
+    local drag_vec = -vel_normalized
 
     -- Get the angle of attack
     local aoa = -math.asin(wing_normal:Dot(vel_normalized))
     -- 0.40404372 is equal to the 23.15 degrees seen in the desmos link, in radians
     local lift_coef = math.abs(aoa) < 0.40404372 and 1.1*math.sin(6*aoa) or math.sin(2*aoa)
-    local drag_coef = 0.9*(1 - math.cos(2*aoa))
+    local drag_coef = 0.9*(1.1 - math.cos(2*aoa))
 
-    local lift_magnitude = math.Clamp(lift_coef * vel:LengthSqr(), -1e6, 1e6)
-    local drag_magnitude = math.Clamp(drag_coef * vel:LengthSqr(), -1e6, 1e6)
+    local lift_magnitude = lift_coef * vel:LengthSqr()
+    local drag_magnitude = drag_coef * vel:LengthSqr()
 
-    -- The lift vector is perpendicular to the velocity and coplanar with the wing's normal vector
-    --local lift_vec = (wing_normal - vel_normalized*vel_normalized:Dot(wing_normal)):GetNormalized()
-    local lift_vec = wing_right:Cross(vel):GetNormalized()
-    local drag_vec = -vel_normalized
 
-    local force = lift_vec*lift_magnitude + drag_vec*drag_magnitude
-    force = force * fin.efficiency * phys_obj:GetMass() * delta_t * 3e-5
+    local acceleration = (lift_vec*lift_magnitude + drag_vec*drag_magnitude) * fin.efficiency * 1e-6
+    acceleration = filterAcceleration(fin, acceleration)
+    local force = acceleration * phys_obj:GetMass() * delta_t
 
     phys_obj:ApplyForceOffset(force, fin:GetPos())
 end
@@ -88,8 +99,11 @@ function better_fin.models.simplified(phys_obj, fin, delta_t)
     local velocity = phys_obj:GetVelocityAtPoint(fin:GetPos())
     local wing_normal = fin:GetUp()
 
-    local lift_magnitude = math.Clamp(-wing_normal:Dot(velocity) * velocity:Length(), -1e6, 1e6)	-- Clamp the magnitude to avoid spazz
-    local lift = wing_normal * lift_magnitude * fin.efficiency * phys_obj:GetMass() * delta_t * 3e-5
+    local lift_magnitude = -wing_normal:Dot(velocity) * velocity:Length()
 
-    phys_obj:ApplyForceOffset(lift, fin:GetPos())
+    local acceleration = wing_normal * lift_magnitude * fin.efficiency * 1e-6
+    acceleration = filterAcceleration(fin, acceleration)
+    local force = acceleration * phys_obj:GetMass() * delta_t
+
+    phys_obj:ApplyForceOffset(force, fin:GetPos())
 end
